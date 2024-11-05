@@ -4,26 +4,26 @@ let score = 0, gameInterval = 0, milliSeconds = 0;
 const hundred = 100, leftArrowKey = 37, rightArrowKey = 39, maxSize = 600;
 const frequency = 75, spaceKey = 32;
 const positions = ["0px", "200px", "400px"];
+const parameters = [
+    ["obstacle", 3],
+    ["rockets", -5],
+];
 
-function isCollision(plane, obstacle) {
-    let planeRect = plane.getBoundingClientRect();
+function isCollision(object, obstacle) {
+    let objectRect = object.getBoundingClientRect();
     let obstacleRect = obstacle.getBoundingClientRect();
     return !(
-        planeRect.top > obstacleRect.bottom ||
-        planeRect.bottom < obstacleRect.top ||
-        planeRect.right < obstacleRect.left ||
-        planeRect.left > obstacleRect.right
+        objectRect.top > obstacleRect.bottom ||
+        objectRect.bottom < obstacleRect.top ||
+        objectRect.right < obstacleRect.left ||
+        objectRect.left > obstacleRect.right
     );
 }
 
 function isDestroyed(firedRocket) {
-    let firedRocketRect = firedRocket.getBoundingClientRect();
     const obstacles = document.getElementsByClassName("obstacle");
     for (let i = 0; i < obstacles.length; ++i) {
-        let currentObstacleRect = obstacles[i].getBoundingClientRect();
-        if (firedRocketRect.top <= currentObstacleRect.bottom
-            && firedRocketRect.left >= currentObstacleRect.left
-            && firedRocketRect.right <= currentObstacleRect.right) {
+        if (isCollision(firedRocket, obstacles[i])) {
             firedRocket.remove();
             obstacles[i].remove();
             return true;
@@ -32,18 +32,22 @@ function isDestroyed(firedRocket) {
     return false;
 }
 
-function moveObstacles() {
-    let obstacles = document.getElementsByClassName("obstacle");
-    for (let i = 0; i < obstacles.length; ++i) {
-        let topPosition = parseInt(window.getComputedStyle(obstacles[i]).top, 10);
-        obstacles[i].style.top = (topPosition + 3) + "px";
-        if (topPosition > maxSize) {
-            obstacles[i].remove();
+function moveObjects(line, column) {
+    let objects = document.getElementsByClassName(parameters[line][column]);
+    for (let i = 0; i < objects.length; ++i) {
+        let topPosition = parseInt(window.getComputedStyle(objects[i]).top, 10);
+        objects[i].style.top = (topPosition + parameters[line][column + 1]) + "px";
+        if (topPosition > maxSize || topPosition < 0) {
+            objects[i].remove();
         }
-        if (isCollision(plane, obstacles[i])) {
+        if (parameters[line][column] === "obstacle" && isCollision(plane, objects[i])) {
             clearInterval(gameInterval);
             showScore();
             break;
+        }
+        if (parameters[line][column] === "rockets" && isDestroyed(objects[i])) {
+            ++score;
+            updateScore();
         }
     }
 }
@@ -57,20 +61,6 @@ function createObstacles() {
     gameArea.appendChild(obstacle);
 }
 
-function moveRockets() {
-    let firedRockets = document.getElementsByClassName("rockets");
-    for (let i = 0; i < firedRockets.length; ++i) {
-        let topPosition = parseInt(window.getComputedStyle(firedRockets[i]).top, 10);
-        firedRockets[i].style.top = (topPosition - 5) + "px";
-        if (topPosition < 0) {
-            firedRockets[i].remove();
-        }
-        if (isDestroyed(firedRockets[i])) {
-            ++score;
-            updateScore();
-        }
-    }
-}
 function fire() {
     let rockets = document.createElement("div");
     rockets.id = "rockets";
@@ -104,8 +94,8 @@ function startInterval() {
         if (!(milliSeconds % frequency)) {
             createObstacles();
         }
-        moveObstacles();
-        moveRockets();
+        moveObjects(0, 0);
+        moveObjects(1, 0);
     }, 10);
 }
 
