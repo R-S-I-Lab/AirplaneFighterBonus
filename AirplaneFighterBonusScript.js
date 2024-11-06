@@ -76,9 +76,9 @@ function startGame() {
     startInterval();
 }
 
-document.addEventListener("keydown",function(e) {
+document.addEventListener("keydown", function(e) {
     let leftPosition = parseInt(window.getComputedStyle(plane).left, 10);
-    if(e.keyCode === leftArrowKey && leftPosition > hundred) {
+    if (e.keyCode === leftArrowKey && leftPosition > hundred) {
         plane.style.left = (leftPosition - 2 * hundred) + "px";
     } else if (e.keyCode === rightArrowKey && leftPosition < maxSize - hundred) {
         plane.style.left = (leftPosition + 2 * hundred) + "px";
